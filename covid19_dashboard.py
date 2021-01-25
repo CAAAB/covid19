@@ -221,9 +221,7 @@ def main():
     st.sidebar.text(f'Last update: {df.date_parsed.max()}')
     if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
       ask_refresh = st.sidebar.button("Refresh data")
-    choice_countries = st.sidebar.multiselect('Choose countries:', countries, 
-                                              default = ['France', 'Spain', "United Kingdom"])
-    choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths'), index = 0)
+    
     category = str.lower(choice_category)
     choice_variable = st.sidebar.radio("Evolution:",('Cumulative', 'Daily'), index = 1)
     variable = "_speed" if choice_variable == "Daily" else ""
@@ -239,11 +237,16 @@ def main():
     if ask_refresh:
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
         df = build_df()
+    st.subheader(f'Latest {str.lower(choice_variable)} {category}{text_perm}{text_smoothed}:')
+    st.write(make_map(df, y))
     st.subheader(f'{choice_variable} {category}{text_perm}{text_smoothed}')
     #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
+    choice_countries = st.multiselect('Choose countries:', countries, 
+                                              default = ['France', 'Spain', "United Kingdom"])
+    choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths'), index = 0)
     st.plotly_chart(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
-    st.text(f'Latest {str.lower(choice_variable)} {category}{text_perm}{text_smoothed}:')
-    st.write(make_map(df, y))
+    link = f'["Raw data can be found here"]('https://covid.ourworldindata.org/data/owid-covid-data.csv')'
+    st.markdown(link, unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()

@@ -16,6 +16,7 @@ hide_streamlit_style = """
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+"""
 code = """<!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-187947449-1"></script>
 <script>
@@ -33,6 +34,7 @@ with open(a, 'r') as f:
         with open(a, 'w') as ff:
             newdata=re.sub('<head>','<head>'+code,data)
             ff.write(newdata)
+"""
 components.html(
 """
 <!-- Google Tag Manager -->

@@ -245,7 +245,7 @@ def main():
                                               default = ['France', 'Spain', "United Kingdom"])
     choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths'), index = 0)
     st.plotly_chart(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
-    link = f'["Raw data can be found here"]('https://covid.ourworldindata.org/data/owid-covid-data.csv')'
+    link = f'["Raw data can be found here"]("https://covid.ourworldindata.org/data/owid-covid-data.csv")'
     st.markdown(link, unsafe_allow_html=True)
 
 if __name__ == '__main__':

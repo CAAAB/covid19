@@ -246,7 +246,7 @@ def main():
                                               default = ['France', 'Spain', "United Kingdom"])
     st.plotly_chart(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
     link = f'[Source: Raw data can be found here]("https://covid.ourworldindata.org/data/owid-covid-data.csv")'
-    st.markdown(link, unsafe_allow_html=True)
+    st.sidebar.markdown(link, unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()

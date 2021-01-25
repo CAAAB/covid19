@@ -245,7 +245,7 @@ def main():
     choice_countries = st.multiselect('Choose countries:', countries, 
                                               default = ['France', 'Spain', "United Kingdom"])
     st.plotly_chart(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
-    st.sidebar.write("Source data can be found at this [link](https://covid.ourworldindata.org/data)")
+    st.sidebar.write("Source data can be found [here](https://github.com/owid/covid-19-data/tree/master/public/data)")
 
 if __name__ == '__main__':
     main()

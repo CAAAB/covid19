@@ -207,7 +207,7 @@ def main():
             default_ix.append(olist.index(it))
         return default_ix
 
-    @st.cache()
+    #@st.cache(ttl=60*60*3)
     def build_df():
         df = make_df2() if premade else make_df()
         output = add_days_since_n(df, n=100)

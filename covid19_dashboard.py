@@ -18,7 +18,6 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
 def main():
-    premade = True
     def make_df2():
         test = pd.read_csv('https://covid.ourworldindata.org/data/owid-covid-data.csv')
         test.rename(columns={'iso_code':'country_code_3', 'location':'country', 'date':'date_parsed', 'total_cases':'cases', 'total_deaths':'deaths'}, inplace=True)
@@ -207,9 +206,9 @@ def main():
             default_ix.append(olist.index(it))
         return default_ix
 
-    #@st.cache(ttl=60*60*3)
+    @st.cache(ttl=60*60*3)
     def build_df():
-        df = make_df2() if premade else make_df()
+        df = make_df2()
         output = add_days_since_n(df, n=100)
         df = output.set_index(['country', 'date_parsed']).copy()
         df.rename(columns={'total_deaths_per_million':'deaths_per_million', 'total_cases_per_million':'cases_per_million'}, inplace=True)

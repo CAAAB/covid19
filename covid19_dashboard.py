@@ -241,6 +241,7 @@ def main():
 
     if ask_refresh:
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
+        st.write(f"Last data: {df.date_parsed.max()}, current date: {datetime.now().strftime('%Y-%m-%d')}!")
         df = build_df()
     st.subheader(f'Latest {str.lower(choice_variable)} {category}{text_perm}{text_smoothed}:')
     st.write(make_map(df, y))

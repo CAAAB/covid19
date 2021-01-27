@@ -111,12 +111,12 @@ def main():
     def make_map(df, variable):
             fig = go.Figure(data=go.Choropleth(
             locations=df['country_code_3'],
-            z=df[variable],
+            z=df[variable].apply(round),
             locationmode='ISO-3',
             #colorscale='Reds',
             colorscale=px.colors.diverging.Spectral_r,
             autocolorscale=False,
-            #text=df[variable], # hover text
+            text=df["country"], # hover text
             marker_line_color='black', # line markers between states
             colorbar_title="",
             marker_line_width=0.5

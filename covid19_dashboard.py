@@ -171,7 +171,7 @@ def main():
     if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
       ask_refresh = st.sidebar.button("Refresh data")
     
-    choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths', 'Reproduction rate'), index = 0)
+    choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths', 'Reproduction rate', 'positive_rate'), index = 0)
     category = str.lower(choice_category)
     if choice_category in ['Cases', 'Deaths']:
         choice_variable = st.sidebar.radio("Evolution:",('Cumulative', 'Daily'), index = 1)

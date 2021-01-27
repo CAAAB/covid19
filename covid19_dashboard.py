@@ -185,14 +185,15 @@ def main():
 
     if choice_category in ['Cases', 'Deaths']:
         y = category+perm+variable+smoothed
+        plot_title = f'{choice_variable} {category}{text_perm}{text_smoothed}'
     if choice_category == 'Reproduction rate':
         y = 'reproduction_rate'
+        plot_title = choice_category
     if ask_refresh:
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
         df = build_df()
-    st.subheader(f'Latest {str.lower(choice_variable)} {category}{text_perm}{text_smoothed}:')
+    st.subheader(plot_title)
     st.write(make_map(current, y))
-    st.subheader(f'{choice_variable} {category}{text_perm}{text_smoothed}')
     #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
     choice_countries = st.multiselect('Choose countries:', countries, 
                                               default = ['France', 'Spain', "United Kingdom"])

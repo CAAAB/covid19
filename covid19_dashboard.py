@@ -171,19 +171,22 @@ def main():
     if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
       ask_refresh = st.sidebar.button("Refresh data")
     
-    choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths'), index = 0)
+    choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths', 'Reproduction rate'), index = 0)
     category = str.lower(choice_category)
-    choice_variable = st.sidebar.radio("Evolution:",('Cumulative', 'Daily'), index = 1)
-    variable = "_speed" if choice_variable == "Daily" else ""
-    
+    if choice_category in ['Cases', 'Deaths']:
+        choice_variable = st.sidebar.radio("Evolution:",('Cumulative', 'Daily'), index = 1)
+        variable = "_speed" if choice_variable == "Daily" else ""
+        choice_smoothed = st.sidebar.radio("Weekly rolling average",('Yes', 'No'), index = 0)
+        smoothed = "_smoothed" if choice_smoothed == "Yes" else ""
+        text_smoothed = ', weekly rolling average' if choice_smoothed == "Yes" else ""    
     choice_perm = st.sidebar.radio("Normalize by population:",('Yes', 'No'), index = 0)
     perm = "_per_million" if choice_perm == "Yes" else ""
     text_perm = ' per million inhabitants' if choice_perm == "Yes" else ""
-    choice_smoothed = st.sidebar.radio("Weekly rolling average",('Yes', 'No'), index = 0)
-    smoothed = "_smoothed" if choice_smoothed == "Yes" else ""
-    text_smoothed = ', weekly rolling average' if choice_smoothed == "Yes" else ""
-    y = category+perm+variable+smoothed
 
+    if choice_category in ['Cases', 'Deaths']:
+        y = category+perm+variable+smoothed
+    if choice_category == 'Reproduction rate':
+        y = 'reproduction_rate'
     if ask_refresh:
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
         df = build_df()

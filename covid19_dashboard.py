@@ -132,17 +132,19 @@ def main():
             ))
             return fig
 
-    def plot_date(df, y , countries, category, scatter=False, smooth=False):
-        fig, ax = plt.subplots(figsize=(10,10))
-        smooth = '_smoothed' if smooth else ''
-        for country, cdf in df[df.days_since_n > 0].loc[(countries, category),:].groupby('country'):
-            if scatter:
-                cdf.plot(kind='scatter',x='days_since_n',y=y, ax=ax, label=country)
-            cdf.plot(kind='line',x='date_parsed',y=y+smooth, ax=ax, label=country, linewidth=3)
-        ax.axhline(y=0, color='black')
-        grid(b=True, which='major', color='lightgray', linestyle='-', axis='y')
-        ax.tick_params(axis='both', labelsize=16)
-        plt.show()
+            def plot_ts(df, x, y, countries):
+                df = df[df.days_since_n > 0].loc[countries,:].reset_index()
+                fig = go.Figure()
+                for country in countries:
+                    dfc = df[df['country'] == country]
+                    fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y],
+                                        mode='lines',
+                                        name=country))
+                fig.update_layout(xaxis_title="", yaxis_title="", height=500,
+                    #legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.01)
+                    legend={"orientation":'h'}
+                    )
+                return fig
 
     @st.cache(ttl=60*60*3)
     def build_df():
@@ -190,7 +192,7 @@ def main():
     #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
     choice_countries = st.multiselect('Choose countries:', countries, 
                                               default = ['France', 'Spain', "United Kingdom"])
-    st.plotly_chart(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
+    st.plotly_chart(plot_ts(df, 'date_parsed', y, choice_countries))
     st.sidebar.write("Source data can be found [here](https://github.com/owid/covid-19-data/tree/master/public/data)")
 
 if __name__ == '__main__':

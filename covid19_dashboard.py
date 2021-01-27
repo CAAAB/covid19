@@ -132,19 +132,19 @@ def main():
             ))
             return fig
 
-            def plot_ts(df, x, y, countries):
-                df = df[df.days_since_n > 0].loc[countries,:].reset_index()
-                fig = go.Figure()
-                for country in countries:
-                    dfc = df[df['country'] == country]
-                    fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y],
-                                        mode='lines',
-                                        name=country))
-                fig.update_layout(xaxis_title="", yaxis_title="", height=500,
-                    #legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.01)
-                    legend={"orientation":'h'}
-                    )
-                return fig
+    def plot_ts(df, x, y, countries):
+        df = df[df.days_since_n > 0].loc[countries,:].reset_index()
+        fig = go.Figure()
+        for country in countries:
+            dfc = df[df['country'] == country]
+            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y],
+                            mode='lines',
+                            name=country))
+        fig.update_layout(xaxis_title="", yaxis_title="", height=500,
+        #legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.01)
+            legend={"orientation":'h'}
+            )
+        return fig
 
     @st.cache(ttl=60*60*3)
     def build_df():

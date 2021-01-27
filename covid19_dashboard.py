@@ -137,7 +137,7 @@ def main():
         fig = go.Figure()
         for country in countries:
             dfc = df[df['country'] == country]
-            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y].apply(round),
+            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y],
                             mode='lines',
                             name=country))
         fig.update_layout(xaxis_title="", yaxis_title="", height=500, template="plotly_white",
@@ -179,9 +179,9 @@ def main():
         choice_smoothed = st.sidebar.radio("Weekly rolling average",('Yes', 'No'), index = 0)
         smoothed = "_smoothed" if choice_smoothed == "Yes" else ""
         text_smoothed = ', weekly rolling average' if choice_smoothed == "Yes" else ""    
-    choice_perm = st.sidebar.radio("Normalize by population:",('Yes', 'No'), index = 0)
-    perm = "_per_million" if choice_perm == "Yes" else ""
-    text_perm = ' per million inhabitants' if choice_perm == "Yes" else ""
+        choice_perm = st.sidebar.radio("Normalize by population:",('Yes', 'No'), index = 0)
+        perm = "_per_million" if choice_perm == "Yes" else ""
+        text_perm = ' per million inhabitants' if choice_perm == "Yes" else ""
 
     if choice_category in ['Cases', 'Deaths']:
         y = category+perm+variable+smoothed

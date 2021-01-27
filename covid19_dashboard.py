@@ -1,8 +1,6 @@
 import pandas as pd, numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-import os
-import re
 from datetime import datetime, timedelta
 import streamlit as st
 import streamlit.components.v1 as components
@@ -27,67 +25,6 @@ def main():
         num[num < 0] = 0
         #test = pd.melt(test, id_vars=['country_code_3', 'country', 'date_parsed'], value_vars=['total_cases', 'total_deaths', 'total_cases_per_million', 'total_deaths_per_million'], var_name='category', value_name='cases')
         return test
-    
-    def make_df_pop():
-        df_pop = pd.read_csv('https://raw.githubusercontent.com/datasets/population/master/data/population.csv')
-        df_pop = df_pop[df_pop.Year == df_pop.Year.max()]
-        df_pop = df_pop.rename(columns={'Country Name':'country', 'Country Code':'country_code_3', 'Value':'Population'}).drop(columns='Year')
-        return df_pop
-        
-    def make_df():
-        url_start = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_'
-        df = None
-        for category in ['confirmed', 'deaths', 'recovered']:
-            dd = pd.read_csv(url_start + category + '_global.csv')
-            dd['category'] = category
-            df = pd.concat([df, dd]) if df is not None else dd
-            
-        df = df[['category']+df.columns.values[:-1].tolist()]
-        df = pd.melt(df,id_vars=['category','Province/State', 'Country/Region', 'Lat', 'Long'],
-                                value_vars=df.columns.values[5:],
-                                var_name='date',value_name='cases')
-        
-        latlong = list(df[['Lat', 'Long']].itertuples(index=False, name=None))
-        
-        countrylist = rvg.search(latlong)
-        
-        df['country_code_2'] = [x['cc'] for x in countrylist]
-        df['country_code_3'] = df['country_code_2']
-        
-        convert_country_codes = {'AF':'AFG','AX':'ALA','AL':'ALB','DZ':'DZA','AS':'ASM','AD':'AND','AO':'AGO','AI':'AIA','AQ':'ATA','AG':'ATG','AR':'ARG','AM':'ARM',
-                                'AW':'ABW','AU':'AUS','AT':'AUT','AZ':'AZE','BS':'BHS','BH':'BHR','BD':'BGD','BB':'BRB','BY':'BLR','BE':'BEL','BZ':'BLZ','BJ':'BEN',
-                                'BM':'BMU','BT':'BTN','BO':'BOL','BA':'BIH','BW':'BWA','BV':'BVT','BR':'BRA','IO':'IOT','BN':'BRN','BG':'BGR','BF':'BFA','BI':'BDI',
-                                'KH':'KHM','CM':'CMR','CA':'CAN','CV':'CPV','KY':'CYM','CF':'CAF','TD':'TCD','CL':'CHL','CN':'CHN','CX':'CXR','CC':'CCK','CO':'COL',
-                                'KM':'COM','CG':'COG','CD':'COD','CK':'COK','CR':'CRI','CI':'CIV','HR':'HRV','CU':'CUB','CY':'CYP','CZ':'CZE','DK':'DNK','DJ':'DJI',
-                                'DM':'DMA','DO':'DOM','EC':'ECU','EG':'EGY','SV':'SLV','GQ':'GNQ','ER':'ERI','EE':'EST','ET':'ETH','FK':'FLK','FO':'FRO','FJ':'FJI',
-                                'FI':'FIN','FR':'FRA','GF':'GUF','PF':'PYF','TF':'ATF','GA':'GAB','GM':'GMB','GE':'GEO','DE':'DEU','GH':'GHA','GI':'GIB','GR':'GRC',
-                                'GL':'GRL','GD':'GRD','GP':'GLP','GU':'GUM','GT':'GTM','GG':'GGY','GN':'GIN','GW':'GNB','GY':'GUY','HT':'HTI','HM':'HMD','VA':'VAT',
-                                'HN':'HND','HK':'HKG','HU':'HUN','IS':'ISL','IN':'IND','ID':'IDN','IR':'IRN','IQ':'IRQ','IE':'IRL','IM':'IMN','IL':'ISR','IT':'ITA',
-                                'JM':'JAM','JP':'JPN','JE':'JEY','JO':'JOR','KZ':'KAZ','KE':'KEN','KI':'KIR','KP':'PRK','KR':'KOR','KW':'KWT','KG':'KGZ','LA':'LAO',
-                                'LV':'LVA','LB':'LBN','LS':'LSO','LR':'LBR','LY':'LBY','LI':'LIE','LT':'LTU','LU':'LUX','MO':'MAC','MK':'MKD','MG':'MDG','MW':'MWI',
-                                'MY':'MYS','MV':'MDV','ML':'MLI','MT':'MLT','MH':'MHL','MQ':'MTQ','MR':'MRT','MU':'MUS','YT':'MYT','MX':'MEX','FM':'FSM','MD':'MDA',
-                                'MC':'MCO','MN':'MNG','ME':'MNE','MS':'MSR','MA':'MAR','MZ':'MOZ','MM':'MMR','NA':'NAM','NR':'NRU','NP':'NPL','NL':'NLD','AN':'ANT',
-                                'NC':'NCL','NZ':'NZL','NI':'NIC','NE':'NER','NG':'NGA','NU':'NIU','NF':'NFK','MP':'MNP','NO':'NOR','OM':'OMN','PK':'PAK','PW':'PLW',
-                                'PS':'PSE','PA':'PAN','PG':'PNG','PY':'PRY','PE':'PER','PH':'PHL','PN':'PCN','PL':'POL','PT':'PRT','PR':'PRI','QA':'QAT','RE':'REU',
-                                'RO':'ROU','RU':'RUS','RW':'RWA','BL':'BLM','SH':'SHN','KN':'KNA','LC':'LCA','MF':'MAF','PM':'SPM','VC':'VCT','WS':'WSM','SM':'SMR',
-                                'ST':'STP','SA':'SAU','SN':'SEN','RS':'SRB','SC':'SYC','SL':'SLE','SG':'SGP','SK':'SVK','SI':'SVN','SB':'SLB','SO':'SOM','ZA':'ZAF',
-                                'GS':'SGS','ES':'ESP','LK':'LKA','SD':'SDN','SR':'SUR','SJ':'SJM','SZ':'SWZ','SE':'SWE','CH':'CHE','SY':'SYR','TW':'TWN','TJ':'TJK',
-                                'TZ':'TZA','TH':'THA','TL':'TLS','TG':'TGO','TK':'TKL','TO':'TON','TT':'TTO','TN':'TUN','TR':'TUR','TM':'TKM','TC':'TCA','TV':'TUV',
-                                'UG':'UGA','UA':'UKR','AE':'ARE','GB':'GBR','US':'USA','UM':'UMI','UY':'URY','UZ':'UZB','VU':'VUT','VE':'VEN','VN':'VNM','VG':'VGB',
-                                'VI':'VIR','WF':'WLF','EH':'ESH','YE':'YEM','ZM':'ZMB','ZW':'ZWE'}
-        
-        df.replace({"country_code_3":convert_country_codes},inplace=True)
-        df['date_parsed'] = pd.to_datetime(df['date'], format='%m/%d/%y')
-        
-        # Add world population
-        #df_pop = get_dataset("world_pop_2018")[['Country Name', 'Country Code', '2018']]
-        #df_pop.rename(columns={'Country Name':'country', 'Country Code':'country_code_3', '2018':'Population'}, inplace=True)
-        df = df.merge(make_df_pop(), left_on='country_code_3', right_on='country_code_3')
-        
-        # Normalize by world population
-        df['cases_pop'] = 1000000*df['cases']/df['Population']
-        return df
-    
     
     def add_days_since_n(df, n):
         out = None
@@ -188,24 +125,6 @@ def main():
         ax.tick_params(axis='both', labelsize=16)
         plt.show()
 
-    def make_france():
-        df = pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
-        dep = df[df.granularite == "departement"]
-        dep['maille_code'] = dep.maille_code.str.split("-",expand=True).loc[:,1]
-        dep.rename(columns={'maille_code':'dep_id'}, inplace=True)
-
-        dep_pop = pd.DataFrame(pd.read_html("https://en.wikipedia.org/wiki/List_of_French_departments_by_population")[0])[["Legal population in 2013", "INSEE Dept. No."]]
-        dep_pop.rename(columns={"Legal population in 2013":"population", "INSEE Dept. No.":"dep_id"}, inplace=True)
-        dep_pop
-
-        return pd.merge(dep,dep_pop)
-
-    def get_indices(olist, clist):
-        default_ix = []
-        for it in clist:
-            default_ix.append(olist.index(it))
-        return default_ix
-
     @st.cache(ttl=60*60*3)
     def build_df():
         df = make_df2()
@@ -240,7 +159,6 @@ def main():
 
     if ask_refresh:
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
-        st.write(f"Last data: {df.date_parsed.max()}, current date: {datetime.now().strftime('%Y-%m-%d')}!")
         df = build_df()
     st.subheader(f'Latest {str.lower(choice_variable)} {category}{text_perm}{text_smoothed}:')
     st.write(make_map(df, y))

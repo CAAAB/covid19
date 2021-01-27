@@ -158,6 +158,7 @@ def main():
         df.reset_index('date_parsed', drop=False, inplace=True)
         return df
 
+    ask_refresh = False
     st.title("Covid-19 Dashboard")
     df = build_df()
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")

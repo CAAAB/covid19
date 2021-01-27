@@ -99,12 +99,7 @@ def main():
 
         return fig
 
-    def make_map(df, variable):
-      yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-      #chosen_date = df.date_parsed.max()
-      chosen_date = yesterday
-      current = df[df.date_parsed==chosen_date].reset_index()
-      current = current[current['population'] > 10**6]
+    def make_map(current, variable):
       fig = px.choropleth(current, locations="country_code_3",
                     color=variable,
                     hover_name="country",
@@ -112,6 +107,30 @@ def main():
                     )
       fig.update_layout(height=500,coloraxis_colorbar=dict(title=""))
       return fig
+
+    def make_map(df, variable):
+            fig = go.Figure(data=go.Choropleth(
+            locations=df['country_code_3'],
+            z=df[variable],
+            locationmode='ISO-3',
+            #colorscale='Reds',
+            colorscale=px.colors.diverging.Spectral_r,
+            autocolorscale=False,
+            #text=df[variable], # hover text
+            marker_line_color='black', # line markers between states
+            colorbar_title="",
+            marker_line_width=0.5
+            )
+            )
+            fig.update_layout(
+            title_text='',
+            geo = dict(
+
+            #projection=go.layout.geo.Projection(type = 'albers usa'),
+            #showlakes=True, # lakes
+            #lakecolor='rgb(255, 255, 255)'),
+            ))
+            return fig
 
     def plot_date(df, y , countries, category, scatter=False, smooth=False):
         fig, ax = plt.subplots(figsize=(10,10))
@@ -139,6 +158,11 @@ def main():
 
     st.title("Covid-19 Dashboard")
     df = build_df()
+    yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+    #chosen_date = df.date_parsed.max()
+    chosen_date = yesterday
+    current = df[df.date_parsed==chosen_date].reset_index()
+    current = current[current['population'] > 10**6]
     countries = list(np.unique(df.index.values))
     st.sidebar.text(f'Last update: {df.date_parsed.max()}')
     if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
@@ -161,7 +185,7 @@ def main():
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
         df = build_df()
     st.subheader(f'Latest {str.lower(choice_variable)} {category}{text_perm}{text_smoothed}:')
-    st.write(make_map(df, y))
+    st.write(make_map(current, y))
     st.subheader(f'{choice_variable} {category}{text_perm}{text_smoothed}')
     #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
     choice_countries = st.multiselect('Choose countries:', countries, 

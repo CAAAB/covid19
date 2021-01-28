@@ -199,7 +199,7 @@ def main():
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
         df = build_df()
     st.subheader(plot_title)
-    st.write(make_map(update_current(df, choice_date), y))
+    st.write(make_map(update_current(df, chosen_date), y))
     #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
     choice_countries = st.multiselect('Choose countries:', countries, 
                                               default = ['France', 'Spain', "United Kingdom"])

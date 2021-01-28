@@ -166,7 +166,7 @@ def main():
     st.title("Covid-19 Dashboard")
     df = build_df()
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    chosen_date = str(st.date_input("Map date:"))
+    
     
     def update_current(df, chosen_date):
         current = df[df.date_parsed==chosen_date].reset_index()
@@ -203,6 +203,7 @@ def main():
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
         df = build_df()
     st.subheader(plot_title)
+    chosen_date = str(st.date_input("Map date:"))
     st.write(make_map(update_current(df, chosen_date), y))
     #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
     choice_countries = st.multiselect('Choose countries:', countries, 

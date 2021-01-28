@@ -111,7 +111,7 @@ def main():
     def make_map(df, variable):
             fig = go.Figure(data=go.Choropleth(
             locations=df['country_code_3'],
-            z=df[variable].apply(np.round),
+            z=df[variable].apply(lambda x: np.round(x,2)),
             locationmode='ISO-3',
             #colorscale='Reds',
             colorscale=px.colors.diverging.Spectral_r,
@@ -137,7 +137,7 @@ def main():
         fig = go.Figure()
         for country in countries:
             dfc = df[df['country'] == country]
-            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y].apply(np.round),
+            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y].apply(lambda x: np.round(x)),
                             mode='lines',
                             name=country))
         fig.update_layout(xaxis_title="", yaxis_title="", height=500, template="plotly_white",

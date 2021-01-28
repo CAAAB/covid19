@@ -162,7 +162,8 @@ def main():
     st.title("Covid-19 Dashboard")
     df = build_df()
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    chosen_date = st.date_input("Map date:")
+    chosen_date = str(st.date_input("Map date:"))
+    st.write(f'{chosen_date}, {yesterday}')
     
     def update_current(df, chosen_date):
         current = df[df.date_parsed==chosen_date].reset_index()

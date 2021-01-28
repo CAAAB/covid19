@@ -137,7 +137,7 @@ def main():
         fig = go.Figure()
         for country in countries:
             dfc = df[df['country'] == country]
-            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y],
+            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y].apply(np.round),
                             mode='lines',
                             name=country))
         fig.update_layout(xaxis_title="", yaxis_title="", height=500, template="plotly_white",

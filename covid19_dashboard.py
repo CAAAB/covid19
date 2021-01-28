@@ -111,7 +111,7 @@ def main():
     def make_map(df, variable):
             fig = go.Figure(data=go.Choropleth(
             locations=df['country_code_3'],
-            z=df[variable],#.apply(round),
+            z=df[variable].apply(np.round),
             locationmode='ISO-3',
             #colorscale='Reds',
             colorscale=px.colors.diverging.Spectral_r,

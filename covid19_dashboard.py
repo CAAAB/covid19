@@ -119,6 +119,8 @@ def main():
             text=df["country"], # hover text
             marker_line_color='black', # line markers between states
             colorbar_title="",
+            hovertemplate=hovertemplate='%{z:.2f}'+
+                            '<br>%{x}<br>',
             marker_line_width=0.5
             )
             )

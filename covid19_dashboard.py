@@ -163,7 +163,7 @@ def main():
     df = build_df()
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
     chosen_date = st.date_input("Map date:")
-    st.write(f'{chosen_date} vs {yesterday})
+    st.write(f'{chosen_date} vs {yesterday}')
     #chosen_date = yesterday
     current = df[df.date_parsed==chosen_date].reset_index()
     current = current[current['population'] > 10**6]

@@ -163,10 +163,12 @@ def main():
     df = build_df()
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
     chosen_date = st.date_input("Map date:")
-    st.write(f'{chosen_date} vs {yesterday}')
-    chosen_date = yesterday
-    current = df[df.date_parsed==chosen_date].reset_index()
-    current = current[current['population'] > 10**6]
+    
+    def update_current(df, chosen_date):
+        current = df[df.date_parsed==chosen_date].reset_index()
+        current = current[current['population'] > 10**6]
+        return current
+
     countries = list(np.unique(df.index.values))
     st.sidebar.text(f'Last update: {df.date_parsed.max()}')
     if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
@@ -197,7 +199,7 @@ def main():
       if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
         df = build_df()
     st.subheader(plot_title)
-    st.write(make_map(current, y))
+    st.write(make_map(update_current(df, choice_date), y))
     #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
     choice_countries = st.multiselect('Choose countries:', countries, 
                                               default = ['France', 'Spain', "United Kingdom"])

@@ -5,7 +5,7 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import networkx as nx
-import pygraphviz as pgv
+#import pygraphviz as pgv
 import streamlit as st
 import streamlit.components.v1 as components
 

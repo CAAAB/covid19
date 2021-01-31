@@ -217,7 +217,7 @@ def main():
             self.contact_log.append(my_log)
             other.contact_log.append(their_log)
             return [my_log, their_log]
-
+    st.subheader("TEST1")
     disease = Disease(infectiousness=.75, recovery_time=14, mortality=.2)
     com = Community(size=500, p_susceptible=1, p_infected=0, p_recovered=0, disease=disease, vaccination_strategy="fragile")
     com.add_people(Person(len(com.population),'infected', .99, disease, .5))
@@ -225,6 +225,7 @@ def main():
     while com.time < 100 and still_some_infected:
         still_some_infected = com.evolve()
     df = pd.DataFrame({'susceptible':com.susceptible, 'infected':com.infected, 'recovered':com.recovered, 'dead':com.dead, 'vaccinated':com.vaccinated})
+    st.subheader("TEST1")
     st.write(plt.plot(df[1:]))
     st.write(pd.DataFrame([com.population_status()]).drop('time', axis=1).plot.bar())
     com.population_status()

@@ -82,8 +82,8 @@ def main():
             if self.vaccination_strategy == "fragile":
                 for person in self.population:
                     if person.fragility >= .91:
-                    person.status='vaccinated'
-                    number_vaccinated += 1
+                        person.status='vaccinated'
+                        number_vaccinated += 1
             elif self.vaccination_strategy == "active":
                 for person in self.population:
                     if person.activity >= .91:

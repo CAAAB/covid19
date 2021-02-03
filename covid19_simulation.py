@@ -306,8 +306,8 @@ def main():
     disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
     press_add_person = st.button("Add person")
     if press_add_person:
-        com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5)
-        
+        com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5))
+    
     press_step = st.button("Step")
     if press_step:
         com.evolve()

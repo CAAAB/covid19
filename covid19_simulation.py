@@ -90,7 +90,7 @@ def main():
             return pos
             
         return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
-        statuses = ['susceptible', 'infected', 'recovered', 'dead', 'vaccinated']
+        
     class Community:
         def __init__(self, size, vaccination_strategy):
             self.size = size
@@ -283,10 +283,6 @@ def main():
             self.contact_log.append(my_log)
             other.contact_log.append(their_log)
             return [my_log, their_log]
-    healthy = Disease(name="healthy", infectiousness=0, recovery_time=1, mortality=0)
-    covid   = Disease(name="covid19", infectiousness=.75, recovery_time=14, mortality=.2)
-    ebola   = Disease(name="ebola", infectiousness=1, recovery_time=14, mortality=1)
-    
     
     ui_lockdown = st.sidebar.radio("Lockdown",("Enabled", "Disabled"), index=1)
     ui_vaccination_strategy = st.sidebar.radio("Vaccinate",("None", "Fragile", "Active"), index=0)
@@ -302,12 +298,14 @@ def main():
     recovery_time = ui_recovery_time
     mortality = ui_mortality/100
     
+    statuses = ['susceptible', 'infected', 'recovered', 'dead', 'vaccinated']
     com = Community(size=size, vaccination_strategy=vaccination_strategy)
     disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
     press_add_person = st.button("Add person")
     if press_add_person:
         com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5))
-    
+        st.write(f'{com.size} people in the community')
+        
     press_step = st.button("Step")
     if press_step:
         com.evolve()

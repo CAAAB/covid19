@@ -318,11 +318,11 @@ def main():
         com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5))
         st.write(f'{com.size} people in the community')
         
-    step_size = st.slider("Step size", 1,20,1)
+    step_size = int(st.text("Step size"))
     press_step = st.button("Step")
     if press_step:
         _ = [com.evolve() for _ in range(step_size)]
-        st.write(round(com.R0(),2))
+        st.write(f'R0: {round(com.R0(),2)})
         st.write(com.plot_evolution())
         st.write(com.render_community_graph())
     st.subheader("TEST1")

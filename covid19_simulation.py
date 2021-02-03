@@ -321,7 +321,7 @@ def main():
     step_size = st.slider("Step size", 1,20,1)
     press_step = st.button("Step")
     if press_step:
-        [com.evolve() for _ in range(step_size)]
+        _ = [com.evolve() for _ in range(step_size)]
         st.write(round(com.R0(),2))
         st.write(com.plot_evolution())
         st.write(com.render_community_graph())

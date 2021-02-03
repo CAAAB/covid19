@@ -322,7 +322,7 @@ def main():
     press_step = st.button("Step")
     if press_step:
         _ = [com.evolve() for _ in range(step_size)]
-        st.write(f'R0: {round(com.R0(),2)})
+        st.write(f'R0: {round(com.R0(),2)}')
         st.write(com.plot_evolution())
         st.write(com.render_community_graph())
     st.subheader("TEST1")

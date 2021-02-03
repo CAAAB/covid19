@@ -315,7 +315,7 @@ def main():
     
     press_reset_community = st.button("Reset community")
     if press_reset_community:
-        com = make_community(size=size, vaccination_strategy=vaccination_strategy)
+        com = make_community(size=size, vaccination_strategy=vaccination_strategy, graine=graine)
         
     press_add_person = st.button("Add person")
     if press_add_person:

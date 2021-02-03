@@ -306,6 +306,11 @@ def main():
         
     com = make_community(size=size, vaccination_strategy=vaccination_strategy)
     disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
+    
+    press_reset_community = st.button("Reset community")
+    if press_reset_community:
+        com = make_community(size=size, vaccination_strategy=vaccination_strategy)
+        
     press_add_person = st.button("Add person")
     if press_add_person:
         com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5))
@@ -314,7 +319,7 @@ def main():
     press_step = st.button("Step")
     if press_step:
         com.evolve()
-        st.write(com.R0())
+        st.write(round(com.R0(),2))
         st.write(com.plot_evolution())
         st.write(com.render_community_graph())
     st.subheader("TEST1")

@@ -1,11 +1,15 @@
 import pandas as pd, numpy as np
+from scipy.stats import uniform, bernoulli, beta
+from random import choices, sample
+from itertools import combinations
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-import plotly.express as px
-from datetime import datetime, timedelta
+import networkx as nx
+#import pygraphviz as pgv
 import streamlit as st
 import streamlit.components.v1 as components
 
-PAGE_CONFIG = {"page_title":"Covid-19 dashboard","page_icon":":mask:","layout":"wide"}
+PAGE_CONFIG = {"page_title":"Covid-19 simulation","page_icon":":mask:","layout":"wide"}
 st.set_page_config(**PAGE_CONFIG)
 hide_streamlit_style = """
             <style>
@@ -16,200 +20,283 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
 def main():
-    def make_df2():
-        test = pd.read_csv('https://covid.ourworldindata.org/data/owid-covid-data.csv')
-        test.rename(columns={'iso_code':'country_code_3', 'location':'country', 'date':'date_parsed', 'total_cases':'cases', 'total_deaths':'deaths'}, inplace=True)
-        #test = test[test.country != 'World']
-        test.sort_values(by='date_parsed', inplace=True)
-        num = test._get_numeric_data()
-        num[num < 0] = 0
-        #test = pd.melt(test, id_vars=['country_code_3', 'country', 'date_parsed'], value_vars=['total_cases', 'total_deaths', 'total_cases_per_million', 'total_deaths_per_million'], var_name='category', value_name='cases')
-        return test
-    
-    def add_days_since_n(df, n):
-        out = None
-        for state in df['country'].unique():
-            #print(state)
-            co = df[df['country'] == state].copy()
-            italy_confirmed = co[co['category'] == 'confirmed'].copy()
-            tenormore = italy_confirmed['date_parsed'][italy_confirmed['cases']>n].copy()
-            if len(tenormore) > 0:
-                date_threshold = tenormore.values[0]
-                italy_confirmed.loc[:,'days_since_n'] = (1*(italy_confirmed['date_parsed'] >= date_threshold)).cumsum().values
-                italy_confirmed = italy_confirmed.loc[:,['date_parsed', 'days_since_n']].copy()
-                italy_confirmed.loc[:, 'country'] = state
-                out = italy_confirmed if out is None else pd.concat([out, italy_confirmed])
-        output = pd.merge(df, out, how='left')
-        return output
-    
-    def add_days_since_n(df, n):
-        out = None
-        for state in df['country'].unique():
-            #print(state)
-            co = df[df['country'] == state].copy()
-            italy_confirmed = co
-            tenormore = italy_confirmed['date_parsed'][italy_confirmed['cases']>n].copy()
-            if len(tenormore) > 0:
-                date_threshold = tenormore.values[0]
-                italy_confirmed.loc[:,'days_since_n'] = (1*(italy_confirmed['date_parsed'] >= date_threshold)).cumsum().values
-                italy_confirmed = italy_confirmed.loc[:,['date_parsed', 'days_since_n']].copy()
-                italy_confirmed.loc[:, 'country'] = state
-                out = italy_confirmed if out is None else pd.concat([out, italy_confirmed])
-        output = pd.merge(df, out, how='left')
-        return output
-    
-    def my_smoothie(df, x, window):
-        return df[x].rolling(window).mean().ewm(span=3).mean()
-    
-    def compute_new_cases(tdf, window):
-        for category in ['cases', 'deaths']:
-            tdf[category+'_smoothed'] = my_smoothie(tdf, category, window)
-            tdf[category+'_speed'] = tdf[category+''].groupby(['country']).diff()
-            tdf[category+'_speed_smoothed'] = my_smoothie(tdf,category+'_speed', window)
-            tdf[category+'_acceleration'] = tdf[category+'_speed_smoothed'].diff()
-            tdf[category+'_acceleration_smoothed'] = my_smoothie(tdf,category+'_acceleration', window)
-        return tdf
-    
-    def compute_new_cases_pop(tdf, window):
-        for category in ['cases', 'deaths']:
-            tdf[category+'_per_million_smoothed'] = my_smoothie(tdf, category+'_per_million', window)
-            tdf[category+'_per_million_speed'] = tdf[category+'_per_million'].groupby(['country']).diff()
-            tdf[category+'_per_million_speed_smoothed'] = my_smoothie(tdf,category+'_per_million_speed', window)
-            tdf[category+'_per_million_acceleration'] = tdf[category+'_per_million_speed_smoothed'].diff()
-            tdf[category+'_per_million_acceleration_smoothed'] = my_smoothie(tdf,category+'_per_million_acceleration', window)
-        return tdf
-    
-    def myplot(df, x, y, countries, category, scatter=False):
-        fig, ax = plt.subplots(figsize=(15,12))
-        for country, cdf in df[df.days_since_n > 0].loc[(countries, category),:].groupby('country'):
-            if scatter:
-                cdf.plot(kind='scatter',x='days_since_n',y=y, ax=ax, label=country)
-            cdf.plot(kind='line',x=x,y=y, ax=ax, label=country, linewidth=3)
-        ax.axhline(y=0, color='black')
-        grid(b=True, which='major', color='lightgray', linestyle='-', axis='y')
-        ax.tick_params(axis='both', labelsize=16)
-        plt.show()
-    
-    def myplotly(df, x, y, countries, category, scatter = False):
-        fig = px.line(df[df.days_since_n > 0].loc[countries,:].reset_index(), x=x, y=y, title="", color='country', template='plotly_white').for_each_trace(lambda t: t.update(name=t.name.split("=")[1]))
-        fig.update_layout(xaxis_title="", yaxis_title="", height=500,
-        #legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.01)
-        legend={"orientation":'h'}
-        )
+    def random_combination(iterable, r):
+        "Random selection from itertools.combinations(iterable, r)"
+        pool = tuple(iterable)
+        n = len(pool)
+        indices = sorted(sample(range(n), r))
+        return tuple(pool[i] for i in indices)
 
-        return fig
+    def hierarchy_pos(G, root=None, width=1., vert_gap = 0.2, vert_loc = 0, xcenter = 0.5):
 
-    def make_map(current, variable):
-      fig = px.choropleth(current, locations="country_code_3",
-                    color=variable,
-                    hover_name="country",
-                    color_continuous_scale=px.colors.diverging.Spectral_r
-                    )
-      fig.update_layout(height=500,coloraxis_colorbar=dict(title=""))
-      return fig
+        '''
+        From Joel's answer at https://stackoverflow.com/a/29597209/2966723.  
+        Licensed under Creative Commons Attribution-Share Alike 
+        
+        If the graph is a tree this will return the positions to plot this in a 
+        hierarchical layout.
+        
+        G: the graph (must be a tree)
+        
+        root: the root node of current branch 
+        - if the tree is directed and this is not given, 
+          the root will be found and used
+        - if the tree is directed and this is given, then 
+          the positions will be just for the descendants of this node.
+        - if the tree is undirected and not given, 
+          then a random choice will be used.
+        
+        width: horizontal space allocated for this branch - avoids overlap with other branches
+        
+        vert_gap: gap between levels of hierarchy
+        
+        vert_loc: vertical location of root
+        
+        xcenter: horizontal location of root
+        '''
+        if not nx.is_tree(G):
+            raise TypeError('cannot use hierarchy_pos on a graph that is not a tree')
 
-    def make_map(df, variable):
-            fig = go.Figure(data=go.Choropleth(
-            locations=df['country_code_3'],
-            z=df[variable].apply(lambda x: np.round(x,2)),
-            locationmode='ISO-3',
-            #colorscale='Reds',
-            colorscale=px.colors.diverging.Spectral_r,
-            autocolorscale=False,
-            text=df["country"], # hover text
-            marker_line_color='black', # line markers between states
-            colorbar_title="",
-            #hovertemplate='%{z:.2f}'+'<br>%{locations}<br>',
-            marker_line_width=0.5
-            )
-            )
-            fig.update_layout(
-            title_text='',
-            geo = dict(
+        if root is None:
+            if isinstance(G, nx.DiGraph):
+                root = next(iter(nx.topological_sort(G)))  #allows back compatibility with nx version 1.11
+            else:
+                root = random.choice(list(G.nodes))
 
-            #projection=go.layout.geo.Projection(type = 'albers usa'),
-            #showlakes=True, # lakes
-            #lakecolor='rgb(255, 255, 255)'),
-            ))
+        def _hierarchy_pos(G, root, width=1., vert_gap = 0.2, vert_loc = 0, xcenter = 0.5, pos = None, parent = None):
+            '''
+            see hierarchy_pos docstring for most arguments
+
+            pos: a dict saying where all nodes go if they have been assigned
+            parent: parent of this branch. - only affects it if non-directed
+
+            '''
+        
+            if pos is None:
+                pos = {root:(xcenter,vert_loc)}
+            else:
+                pos[root] = (xcenter, vert_loc)
+            children = list(G.neighbors(root))
+            if not isinstance(G, nx.DiGraph) and parent is not None:
+                children.remove(parent)  
+            if len(children)!=0:
+                dx = width/len(children) 
+                nextx = xcenter - width/2 - dx/2
+                for child in children:
+                    nextx += dx
+                    pos = _hierarchy_pos(G,child, width = dx, vert_gap = vert_gap, 
+                                        vert_loc = vert_loc-vert_gap, xcenter=nextx,
+                                        pos=pos, parent = root)
+            return pos
+            
+        return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
+        statuses = ['susceptible', 'infected', 'recovered', 'dead', 'vaccinated']
+    class Community:
+        def __init__(self, size, vaccination_strategy):
+            self.size = size
+            self.lockdown_factor = 1
+            self.evolution = None
+            self.time = 0
+            self.meeting_log = []
+            self.vaccination_strategy = vaccination_strategy
+            activities = np.random.uniform(size=size)
+            #fragilities = np.random.uniform(size=size)
+            fragilities = 1-activities
+            self.population = [Person(i, "susceptible", activity=activities[i], disease="none", fragility=fragilities[i]) for i in range(size)]
+            self.people_vaccinated = self.vaccinate()
+            self.update_community_stats()
+            self.time += 1
+            #self.evolution = self.current_pop_status()
+      
+        def initiate_lockdown(self, lockdown_factor):
+            self.lockdown_factor = lockdown_factor
+
+        def lift_lockdown(self):
+            self.lockdown_factor = 1
+
+        def R0(self):
+            df = pd.DataFrame(self.meeting_log)
+            return df[df['gave_virus'] == True].groupby('id').agg('sum').reset_index()['gave_virus'].mean()
+
+        def current_pop_status(self):
+            current_pop_status = {f'{status}':[np.sum(self.population_df()['status'] == status)] for status in ['susceptible', 'infected', 'recovered', 'dead', 'vaccinated']}
+            current_pop_status['time'] = [self.time]
+            return pd.DataFrame(current_pop_status)
+      
+        def update_community_stats(self):
+            self.evolution = pd.concat([self.evolution, self.current_pop_status()], ignore_index=False) if self.evolution is not None else self.current_pop_status() 
+          
+        def evolve(self):
+            # improvement: only infected and susceptible actually participate here
+            #i_or_s = np.where([x in ['infected', 'susceptible'] for x in np.array(self.population_df()['status'])])[0]
+            #active_people = np.where([bernoulli.rvs(person.activity*self.lockdown_factor) for person in np.array(self.population)[i_or_s]])[0]
+            active_people = np.where([bernoulli.rvs(person.activity*self.lockdown_factor) for person in self.population])[0]
+            if len(active_people) >=2:
+                #possible_meetings = list(combinations(active_people,2))
+                #meetings = choices(possible_meetings,k=len(possible_meetings)//2) # Half of the possible meetings actually occur
+                meetings = list(set([random_combination(active_people,2) for _ in range(self.size//5)]))
+                for i, j in meetings:
+                    new_entry = self.population[i].meet(self.population[j], self.time)
+                    self.meeting_log.append(new_entry[0])
+                    self.meeting_log.append(new_entry[1])
+            for person in self.population:
+                person.step()
+            self.update_community_stats()
+            self.time += 1
+            return self.current_pop_status()['infected'][0] != 0
+        
+        def plot_evolution(self):
+            fig = go.Figure()
+            for status in statuses:
+                fig.add_trace(go.Scatter(x=self.evolution.time, y=self.evolution[status],
+                                mode='lines',
+                                name=status,
+                                #hovertemplate='%{x}'+'<br>%{y}<br>'
+                                ))
+            fig.update_layout(xaxis_title="Time", yaxis_title="Count", height=500, template="plotly_white",
+            #legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.01)
+                #legend={"orientation":'h'}
+                )
+            plt.show()
             return fig
 
-    def plot_ts(df, x, y, countries):
-        df = df[df.days_since_n > 0].loc[countries,:].reset_index()
-        fig = go.Figure()
-        for country in countries:
-            dfc = df[df['country'] == country]
-            fig.add_trace(go.Scatter(x=dfc[x], y=dfc[y],
-                            mode='lines',
-                            name=country,
-                            hovertemplate='%{y:.2f}'+
-                            '<br>%{x}<br>',        
-                                    ))
-        fig.update_layout(xaxis_title="", yaxis_title="", height=500, template="plotly_white",
-        #legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.01)
-            legend={"orientation":'h'}
+        def vaccinate(self):
+            number_vaccinated = 0
+            if self.vaccination_strategy == "fragile":
+                for person in self.population:
+                    if person.fragility >= .9:
+                        person.status='vaccinated'
+                        number_vaccinated += 1
+            elif self.vaccination_strategy == "active":
+                for person in self.population:
+                    if person.activity >= .9:
+                        person.status="vaccinated"
+                        number_vaccinated += 1
+            return number_vaccinated
+      
+        def add_people(self, person):
+            self.population.append(person)
+        
+        def print(self):
+            statuses = [person.get_status() for person in self.population]
+            print(pd.DataFrame(pd.Series(statuses).value_counts()))
+      
+        def population_df(self):
+            return pd.DataFrame([person.get_record() for person in self.population])
+      
+        def population_status(self):
+            vals = [person.status for person in self.population]
+            unique_vals = np.unique(vals)
+            population_status = {'time':self.time}
+            for status in unique_vals:
+                population_status[status]=vals.count(status)
+            return population_status
+      
+        def render_community_graph(self, layout="dot"):
+            meeting_log = pd.DataFrame(com.meeting_log)
+            G = nx.from_pandas_edgelist(meeting_log[meeting_log.gave_virus == True], "id", 'id_contact', create_using=nx.DiGraph())
+            #pos = nx.spring_layout(G)
+            pos = hierarchy_pos(G)    
+            #pos = nx.nx_agraph.graphviz_layout(G, prog=layout) # dot, neato, twopi, circo
+            d = dict(G.degree)
+            Xv=[pos[k][0] for k in G.nodes]
+            Yv=[pos[k][1] for k in G.nodes]
+            Xed=[]
+            Yed=[]
+            for edge in G.edges:
+                Xed+=[pos[edge[0]][0],pos[edge[1]][0], None]
+                Yed+=[pos[edge[0]][1],pos[edge[1]][1], None]
+        
+            trace3=go.Scatter(x=Xed,y=Yed,mode='lines',line=dict(color='rgb(210,210,210)', width=1),hoverinfo='none')
+            trace4=go.Scatter(x=Xv, y=Yv,mode='markers',name='Person',marker=dict(symbol='circle-dot',
+                                        size=5,
+                                        color='DarkSlateGrey',
+                                        line=dict(color='rgb(50,50,50)', width=0.5)
+                                        ),
+                            text=[n for n in G.nodes],hoverinfo='text'
+                            )
+        
+            fig=go.Figure([trace3, trace4])
+            fig.update_layout(template='simple_white', xaxis= {
+                'showgrid': False, # thin lines in the background
+                'zeroline': False, # thick line at x=0
+                'visible': False,  # numbers below
+            },yaxis= {
+                'showgrid': False, # thin lines in the background
+                'zeroline': False, # thick line at x=0
+                'visible': False,  # numbers below
+            },
+            showlegend=False
             )
-        return fig
+            return fig
 
-    @st.cache(ttl=60*60*3)
-    def build_df():
-        df = make_df2()
-        output = add_days_since_n(df, n=100)
-        df = output.set_index(['country', 'date_parsed']).copy()
-        df.rename(columns={'total_deaths_per_million':'deaths_per_million', 'total_cases_per_million':'cases_per_million'}, inplace=True)
-        df.sort_values(by=['country', 'date_parsed'],inplace=True)
-        df = compute_new_cases(df, window=7)
-        df = compute_new_cases_pop(df, window=7)
-        df.reset_index('date_parsed', drop=False, inplace=True)
-        return df
+    class Disease:
+        def __init__(self, name, infectiousness, recovery_time, mortality):
+            self.name = name
+            self.infectiousness = infectiousness
+            self.recovery_time = recovery_time
+            self.mortality = mortality
 
-    ask_refresh = False
-    st.title("Covid-19 Dashboard")
-    df = build_df()
-    yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+    class Person:
+        def __init__(self, id, status, activity, disease, fragility):
+            self.id=id
+            self.status=status
+            self.activity=activity
+            self.history=[]
+            self.disease=disease
+            self.days_infected=0
+            self.contact_log=[]
+            self.fragility = fragility
+      
+        def get_record(self):
+            return {"id":self.id, "status":self.status, "activity":self.activity, 'fragility':self.fragility, "days_infected":self.days_infected}
+      
+        def get_infected(self, disease):
+            infection_result = False
+            if self.status == "susceptible":
+                self.status = 'infected'
+                self.disease = disease
+                infection_result = True
+            return infection_result
+      
+        def step(self):
+            if self.status == 'infected':
+                self.days_infected +=1
+                if self.days_infected >= self.disease.recovery_time:
+                    if bernoulli.rvs(min([1,self.disease.mortality*(1+1-np.tanh(13-self.fragility*13))])):
+                        self.status='dead'
+                    else:
+                        self.status='recovered'
+            self.history.append(self.status)
+      
+        def meet(self, other, time):
+            gave_virus = False
+            caught_virus = False
+            if self.status == 'infected' and other.status == 'susceptible':
+                if bernoulli.rvs(self.disease.infectiousness):
+                    gave_virus = other.get_infected(self.disease)    
+            elif other.status == 'infected' and self.status == "susceptible":
+                if bernoulli.rvs(other.disease.infectiousness):
+                    caught_virus = self.get_infected(other.disease)
+            my_log = {'time':time, 'id':self.id, 'id_contact':other.id, 'gave_virus':gave_virus, 'caught_virus':caught_virus}
+            their_log = {'time':time,'id':other.id, 'id_contact':self.id, 'gave_virus':caught_virus, 'caught_virus':gave_virus}
+            self.contact_log.append(my_log)
+            other.contact_log.append(their_log)
+            return [my_log, their_log]
+    healthy = Disease(name="healthy", infectiousness=0, recovery_time=1, mortality=0)
+    covid   = Disease(name="covid19", infectiousness=.75, recovery_time=14, mortality=.2)
+    ebola   = Disease(name="ebola", infectiousness=1, recovery_time=14, mortality=1)
     
     
-    def update_current(df, chosen_date):
-        current = df[df.date_parsed==chosen_date].reset_index()
-        current = current[current['population'] > 10**6]
-        return current
-
-    countries = list(np.unique(df.index.values))
-    st.sidebar.text(f'Last update: {df.date_parsed.max()}')
-    if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
-      ask_refresh = st.sidebar.button("Refresh data")
+    lockdown = st.sidebar.radio("Lockdown",("Enabled", "Disabled"), index=1)
+    vaccination_strategy = st.sidebar.radio("Vaccinate",("None", "Fragile", "Active"), index=0)
+    community_size = st.sidebar.slider("Population", 10,2010, 510, 100)
+    infectiousness = st.sidebar.slider("Infectiousness", 0,1,.7,.1)
+    recovery_time = st.sidebar.slider("Recovery time", 1,90,7,1)
+    mortality = st.sidebar.slider("Mortality", 0,1,.2,.1)
+    st.subheader("TEST1")
+    #st.write(plt.plot(df[1:]))
+    #st.write(com.render_community_graph())
     
-    choice_category = st.sidebar.radio("Category:",('Cases', 'Deaths', 'Reproduction rate', 'Positive rate'), index = 0)
-    category = str.lower(choice_category)
-    if choice_category in ['Cases', 'Deaths']:
-        choice_variable = st.sidebar.radio("Evolution:",('Cumulative', 'Daily'), index = 1)
-        variable = "_speed" if choice_variable == "Daily" else ""
-        choice_smoothed = st.sidebar.radio("Weekly rolling average",('Yes', 'No'), index = 0)
-        smoothed = "_smoothed" if choice_smoothed == "Yes" else ""
-        text_smoothed = ', weekly rolling average' if choice_smoothed == "Yes" else ""    
-        choice_perm = st.sidebar.radio("Normalize by population:",('Yes', 'No'), index = 0)
-        perm = "_per_million" if choice_perm == "Yes" else ""
-        text_perm = ' per million inhabitants' if choice_perm == "Yes" else ""
-
-    if choice_category in ['Cases', 'Deaths']:
-        y = category+perm+variable+smoothed
-        plot_title = f'{choice_variable} {category}{text_perm}{text_smoothed}'
-    if choice_category == 'Reproduction rate':
-        y = 'reproduction_rate'
-        plot_title = choice_category
-    if choice_category == 'Positive rate':
-        y = 'positive_rate'
-        plot_title = choice_category
-    if ask_refresh:
-      if df.date_parsed.max() != datetime.now().strftime('%Y-%m-%d'):
-        df = build_df()
-    st.subheader(plot_title)
-    chosen_date = str(st.date_input("Map date:"))
-    st.write(make_map(update_current(df, chosen_date), y))
-    #st.write(myplotly(df, 'date_parsed', y, choice_countries, "cases"))
-    choice_countries = st.multiselect('Choose countries:', countries, 
-                                              default = ['France', 'Spain', "United Kingdom"])
-    st.plotly_chart(plot_ts(df, 'date_parsed', y, choice_countries))
-    st.sidebar.write("Source data can be found [here](https://github.com/owid/covid-19-data/tree/master/public/data)")
-
 if __name__ == '__main__':
-    main()
+        main()

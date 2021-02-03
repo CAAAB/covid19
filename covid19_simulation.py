@@ -1,6 +1,6 @@
 import pandas as pd, numpy as np
 from scipy.stats import uniform, bernoulli, beta
-from random import choices, sample
+from random import choices, sample, seed
 from itertools import combinations
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
@@ -301,17 +301,17 @@ def main():
     mortality = ui_mortality/100
     
     statuses = ['susceptible', 'infected', 'recovered', 'dead', 'vaccinated']
-    seed = 142
+    graine = 42
     
     @st.cache(allow_output_mutation=True)
     def make_community(size, vaccination_strategy, seed):
         random.seed(seed)
         return Community(size=size, vaccination_strategy=vaccination_strategy)
         
-    com = make_community(size=size, vaccination_strategy=vaccination_strategy, seed=seed)
+    com = make_community(size=size, vaccination_strategy=vaccination_strategy, seed=graine)
     disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
     
-    seed = st.number_input("Seed", 1, 9999, seed, 1)
+    graine = st.number_input("Seed", 1, 9999, graine, 1)
     
     press_reset_community = st.button("Reset community")
     if press_reset_community:

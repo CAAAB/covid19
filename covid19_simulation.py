@@ -318,7 +318,7 @@ def main():
         com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5))
         st.write(f'{com.size} people in the community')
         
-    step_size = int(st.text("Step size"))
+    step_size = st.number_input("Step size", 1, 60, 1,1)
     press_step = st.button("Step")
     if press_step:
         _ = [com.evolve() for _ in range(step_size)]

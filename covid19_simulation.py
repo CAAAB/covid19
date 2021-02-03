@@ -299,7 +299,12 @@ def main():
     mortality = ui_mortality/100
     
     statuses = ['susceptible', 'infected', 'recovered', 'dead', 'vaccinated']
-    com = Community(size=size, vaccination_strategy=vaccination_strategy)
+    
+    @st.cache
+    def make_community(size, vaccination_strategy):
+        return Community(size=size, vaccination_strategy=vaccination_strategy)
+        
+    com = make_community(size=size, vaccination_strategy=vaccination_strategy)
     disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
     press_add_person = st.button("Add person")
     if press_add_person:

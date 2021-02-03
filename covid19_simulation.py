@@ -304,11 +304,11 @@ def main():
     graine = 42
     
     @st.cache(allow_output_mutation=True)
-    def make_community(size, vaccination_strategy, seed):
-        random.seed(seed)
+    def make_community(size, vaccination_strategy, graine):
+        seed(graine)
         return Community(size=size, vaccination_strategy=vaccination_strategy)
         
-    com = make_community(size=size, vaccination_strategy=vaccination_strategy, seed=graine)
+    com = make_community(size=size, vaccination_strategy=vaccination_strategy, graine=graine)
     disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
     
     graine = st.number_input("Seed", 1, 9999, graine, 1)

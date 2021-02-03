@@ -288,12 +288,32 @@ def main():
     ebola   = Disease(name="ebola", infectiousness=1, recovery_time=14, mortality=1)
     
     
-    lockdown = st.sidebar.radio("Lockdown",("Enabled", "Disabled"), index=1)
-    vaccination_strategy = st.sidebar.radio("Vaccinate",("None", "Fragile", "Active"), index=0)
-    community_size = st.sidebar.slider("Population", 10,2010, 510, 100)
-    infectiousness = st.sidebar.slider("Infectiousness", 0,100,70,1)
-    recovery_time = st.sidebar.slider("Recovery time", 1,90,7,1)
-    mortality = st.sidebar.slider("Mortality", 0,100,20,1)
+    ui_lockdown = st.sidebar.radio("Lockdown",("Enabled", "Disabled"), index=1)
+    ui_vaccination_strategy = st.sidebar.radio("Vaccinate",("None", "Fragile", "Active"), index=0)
+    ui_community_size = st.sidebar.slider("Population", 10,2010, 510, 100)
+    ui_infectiousness = st.sidebar.slider("Infectiousness", 0,100,70,1)
+    ui_recovery_time = st.sidebar.slider("Recovery time", 1,90,7,1)
+    ui_mortality = st.sidebar.slider("Mortality", 0,100,20,1)
+    
+    lockdown = True if ui_lockdown == "Enabled" else False
+    vaccination_strategy = str.lower(ui_vaccination_strategy)
+    size = ui_community_size
+    infectiousness = ui_infectiousness/100
+    recovery_time = ui_recovery_time
+    mortality = ui_mortality/100
+    
+    com = Community(size=size, vaccination_strategy=vaccination_strategy)
+    disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
+    press_add_person = st.button("Add person")
+    if press_add_person:
+        com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5)
+        
+    press_step = st.button("Step")
+    if press_step:
+        com.evolve()
+        st.write(com.R0())
+        st.write(com.plot_evolution())
+        st.write(com.render_community_graph())
     st.subheader("TEST1")
     #st.write(plt.plot(df[1:]))
     #st.write(com.render_community_graph())

@@ -283,10 +283,12 @@ def main():
             self.contact_log.append(my_log)
             other.contact_log.append(their_log)
             return [my_log, their_log]
-    
+
+    ui_community_size = st.sidebar.slider("Population", 10,2010, 510, 100)
+    st.sidebar.subheader("Strategy")
     ui_lockdown = st.sidebar.radio("Lockdown",("Enabled", "Disabled"), index=1)
     ui_vaccination_strategy = st.sidebar.radio("Vaccinate",("None", "Fragile", "Active"), index=0)
-    ui_community_size = st.sidebar.slider("Population", 10,2010, 510, 100)
+    st.sidebar.subheader("Disease")
     ui_infectiousness = st.sidebar.slider("Infectiousness", 0,100,70,1)
     ui_recovery_time = st.sidebar.slider("Recovery time", 1,90,7,1)
     ui_mortality = st.sidebar.slider("Mortality", 0,100,20,1)

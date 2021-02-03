@@ -300,7 +300,7 @@ def main():
     
     statuses = ['susceptible', 'infected', 'recovered', 'dead', 'vaccinated']
     
-    @st.cache
+    @st.cache(allow_output_mutation=True)
     def make_community(size, vaccination_strategy):
         return Community(size=size, vaccination_strategy=vaccination_strategy)
         

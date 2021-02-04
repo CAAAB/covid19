@@ -341,6 +341,13 @@ def main():
         st.write(com.render_community_graph())
     #st.write(plt.plot(df[1:]))
     #st.write(com.render_community_graph())
+    n_infected = com.current_pop_status().iloc[-1]['infected']        
+    if st.button("Start"):
+        while n_infected != 0:
+            n_infected = com.evolve()
+        st.write(f'R0: {round(com.R0(),2)}')
+        st.write(com.plot_evolution())
+        st.write(com.render_community_graph())
     
 if __name__ == '__main__':
         main()

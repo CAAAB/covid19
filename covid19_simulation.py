@@ -202,7 +202,7 @@ def main():
             try:
                 pos = hierarchy_pos(G)   
             except TypeError:
-                pos = np.sping_layout(G)
+                pos = nx.sping_layout(G)
             #pos = nx.nx_agraph.graphviz_layout(G, prog=layout) # dot, neato, twopi, circo
             d = dict(G.degree)
             Xv=[pos[k][0] for k in G.nodes]

@@ -201,7 +201,7 @@ def main():
             #pos = nx.spring_layout(G)
             try:
                 pos = hierarchy_pos(G)   
-            except NetworkXPointlessConcept:
+            except TypeError:
                 pos = np.sping_layout(G)
             #pos = nx.nx_agraph.graphviz_layout(G, prog=layout) # dot, neato, twopi, circo
             d = dict(G.degree)

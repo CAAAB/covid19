@@ -336,9 +336,9 @@ def main():
         #for i in range(step_size):
         #    com.evolve()
         _ = [com.evolve() for _ in range(step_size)]
-        #    st.write(f'R0: {round(com.R0(),2)}')
-        #    st.write(com.plot_evolution())
-        #    st.write(com.render_community_graph())
+        st.write(f'R0: {round(com.R0(),2)}')
+        st.write(com.plot_evolution())
+        st.write(com.render_community_graph())
     #st.write(plt.plot(df[1:]))
     #st.write(com.render_community_graph())
     

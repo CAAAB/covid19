@@ -333,13 +333,12 @@ def main():
     step_size = st.number_input("Step size", 1, 60, 1,1)
     press_step = st.button("Step")
     if press_step:
-        for i in range(step_size):
-            com.evolve()
-            #_ = [com.evolve() for _ in range(step_size)]
-            st.write(f'R0: {round(com.R0(),2)}')
-            st.write(com.plot_evolution())
-            st.write(com.render_community_graph())
-    st.subheader("TEST1")
+        #for i in range(step_size):
+        #    com.evolve()
+        _ = [com.evolve() for _ in range(step_size)]
+        #    st.write(f'R0: {round(com.R0(),2)}')
+        #    st.write(com.plot_evolution())
+        #    st.write(com.render_community_graph())
     #st.write(plt.plot(df[1:]))
     #st.write(com.render_community_graph())
     

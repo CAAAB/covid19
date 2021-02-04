@@ -315,6 +315,7 @@ def main():
         return Community(size=size, vaccination_strategy=vaccination_strategy)
         
     com = make_community(size=size, vaccination_strategy=vaccination_strategy, graine=graine)
+    st.write(com.current_pop_status())
     disease = Disease(name="disease", infectiousness=infectiousness, recovery_time=recovery_time, mortality=mortality)
     
     graine = st.number_input("Seed", 1, 9999, graine, 1)
@@ -328,7 +329,7 @@ def main():
     press_add_person = st.button("Add person")
     if press_add_person:
         com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5))
-        st.write(f'{com.size} people in the community')
+        st.write(com.current_pop_status())
         
     step_size = st.number_input("Step size", 1, 60, 1,1)
     press_step = st.button("Step")

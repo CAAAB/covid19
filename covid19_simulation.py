@@ -194,9 +194,15 @@ def main():
       
         def render_community_graph(self, layout="dot"):
             meeting_log = pd.DataFrame(com.meeting_log)
+            if meeting_log.shape[0] < 2:
+                return None
+            
             G = nx.from_pandas_edgelist(meeting_log[meeting_log.gave_virus == True], "id", 'id_contact', create_using=nx.DiGraph())
             #pos = nx.spring_layout(G)
-            pos = hierarchy_pos(G)    
+            try:
+                pos = hierarchy_pos(G)   
+            except NetworkXPointlessConcept:
+                pos = np.sping_layout(G)
             #pos = nx.nx_agraph.graphviz_layout(G, prog=layout) # dot, neato, twopi, circo
             d = dict(G.degree)
             Xv=[pos[k][0] for k in G.nodes]

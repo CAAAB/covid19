@@ -323,6 +323,7 @@ def main():
     press_reset_community = st.button("Reset community")
     if press_reset_community:
         com = make_community(size=size, vaccination_strategy=vaccination_strategy, graine=graine)
+        st.write(com.current_pop_status())
     #if lockdown:
     #    com.initiate_lockdown()
     

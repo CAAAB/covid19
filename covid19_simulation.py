@@ -143,7 +143,7 @@ def main():
                 person.step()
             self.update_community_stats()
             self.time += 1
-            return self.current_pop_status()['infected'][0] != 0
+            return self.current_pop_status()['infected'][0]
         
         def plot_evolution(self):
             fig = go.Figure()

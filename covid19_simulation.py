@@ -316,7 +316,9 @@ def main():
     press_reset_community = st.button("Reset community")
     if press_reset_community:
         com = make_community(size=size, vaccination_strategy=vaccination_strategy, graine=graine)
-        
+    if lockdown:
+        com.initiate_lockdown()
+    
     press_add_person = st.button("Add person")
     if press_add_person:
         com.add_people(Person(id=len(com.population),status='infected', activity=.99, disease=disease, fragility=.5))
@@ -325,10 +327,12 @@ def main():
     step_size = st.number_input("Step size", 1, 60, 1,1)
     press_step = st.button("Step")
     if press_step:
-        _ = [com.evolve() for _ in range(step_size)]
-        st.write(f'R0: {round(com.R0(),2)}')
-        st.write(com.plot_evolution())
-        st.write(com.render_community_graph())
+        for i in range(step_size):
+            com.evolve()
+            #_ = [com.evolve() for _ in range(step_size)]
+            st.write(f'R0: {round(com.R0(),2)}')
+            st.write(com.plot_evolution())
+            st.write(com.render_community_graph())
     st.subheader("TEST1")
     #st.write(plt.plot(df[1:]))
     #st.write(com.render_community_graph())

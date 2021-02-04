@@ -292,14 +292,14 @@ def main():
 
     ui_community_size = st.sidebar.slider("Population", 10,2010, 510, 100)
     st.sidebar.subheader("Strategy")
-    ui_lockdown = st.sidebar.radio("Lockdown",("Enabled", "Disabled"), index=1)
+    #ui_lockdown = st.sidebar.radio("Lockdown",("Enabled", "Disabled"), index=1)
     ui_vaccination_strategy = st.sidebar.radio("Vaccinate",("None", "Fragile", "Active"), index=0)
     st.sidebar.subheader("Disease")
     ui_infectiousness = st.sidebar.slider("Infectiousness", 0,100,70,1)
     ui_recovery_time = st.sidebar.slider("Recovery time", 1,90,7,1)
     ui_mortality = st.sidebar.slider("Mortality", 0,100,20,1)
     
-    lockdown = True if ui_lockdown == "Enabled" else False
+    #lockdown = True if ui_lockdown == "Enabled" else False
     vaccination_strategy = str.lower(ui_vaccination_strategy)
     size = ui_community_size
     infectiousness = ui_infectiousness/100
@@ -322,8 +322,8 @@ def main():
     press_reset_community = st.button("Reset community")
     if press_reset_community:
         com = make_community(size=size, vaccination_strategy=vaccination_strategy, graine=graine)
-    if lockdown:
-        com.initiate_lockdown()
+    #if lockdown:
+    #    com.initiate_lockdown()
     
     press_add_person = st.button("Add person")
     if press_add_person:
